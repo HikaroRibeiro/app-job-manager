@@ -1,0 +1,68 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(uuid())
+  name          String
+  email         String    @unique
+  password_hash String
+  created_at    DateTime  @default(now())
+  modified_at   DateTime?
+
+  jobs       Job[]
+  job_stream Job_Stream[]
+
+  @@map("users")
+}
+
+model Job {
+  id          String    @id @default(uuid())
+  user_id     String
+  title       String    @unique
+  task        String
+  created_at  DateTime  @default(now())
+  modified_at DateTime?
+
+  user User @relation(fields: [user_id], references: [id])
+
+  Job_JobStream Job_JobStream[]
+
+  @@map("jobs")
+}
+
+model Job_JobStream {
+  id            String   @id @default(uuid())
+  job_id        String
+  job_stream_id String
+  created_at    DateTime @default(now())
+
+  job        Job        @relation(fields: [job_id], references: [id])
+  job_stream Job_Stream @relation(fields: [job_stream_id], references: [id])
+
+  @@map("jobs_jobsstreams")
+}
+
+model Job_Stream {
+  id          String    @id @default(uuid())
+  title       String    @unique
+  user_id     String
+  created_at  DateTime  @default(now())
+  modified_at DateTime?
+
+  User          User            @relation(fields: [user_id], references: [id])
+  Job_JobStream Job_JobStream[]
+
+  @@map("jobs_stream")
+}
